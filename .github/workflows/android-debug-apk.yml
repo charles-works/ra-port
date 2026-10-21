@@ -51,9 +51,6 @@ jobs:
 
           export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
 
-          # Accepting licenses is interactive; piping 'yes' is fine, but with `set -o pipefail`
-          # the child process may exit early after all licenses are accepted, causing a broken
-          # pipe exit code that falsely makes the job fail. Ignore that cleanup error and continue.
           yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null || true
 
           sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --install \
@@ -73,7 +70,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.14.1
+          gradle-version: 9.4.1
 
       - name: Build Android debug APK
         shell: bash
