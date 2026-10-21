@@ -27,28 +27,31 @@ jobs:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Install Android SDK components
-        uses: android-actions/setup-android@v3
+      - name: Install Android commandline tools
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd "$ANDROID_SDK_ROOT/cmdline-tools"
+
+          if [ ! -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            wget -q "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -O cmdline-tools.zip
+            rm -rf latest
+            unzip -q -o cmdline-tools.zip
+            mv cmdline-tools latest
+          fi
+
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
 
       - name: Install SDK packages
         shell: bash
         run: |
           set -euxo pipefail
 
-          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-${GITHUB_WORKSPACE}/android-sdk}"
-          export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT}}"
-
-          # The setup-android action can leave cmdline-tools in a versioned folder
-          # (for example cmdline-tools/16.0). Some SDK invocations expect the
-          # conventional cmdline-tools/latest layout, so create that alias when needed.
-          if [ ! -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ] && [ -x "$ANDROID_SDK_ROOT/cmdline-tools/16.0/bin/sdkmanager" ]; then
-            mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-            ln -sfn "$ANDROID_SDK_ROOT/cmdline-tools/16.0" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          fi
-
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
           yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
           sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --install \
-            "cmdline-tools;latest" \
             "platform-tools" \
             "platforms;android-36" \
             "build-tools;36.0.0" \
