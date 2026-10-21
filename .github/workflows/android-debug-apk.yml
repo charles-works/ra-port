@@ -50,7 +50,12 @@ jobs:
           set -euxo pipefail
 
           export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
-          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
+
+          # Accepting licenses is interactive; piping 'yes' is fine, but with `set -o pipefail`
+          # the child process may exit early after all licenses are accepted, causing a broken
+          # pipe exit code that falsely makes the job fail. Ignore that cleanup error and continue.
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null || true
+
           sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --install \
             "platform-tools" \
             "platforms;android-36" \
