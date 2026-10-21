@@ -34,8 +34,21 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          yes | sdkmanager --licenses
-          sdkmanager \
+
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-${GITHUB_WORKSPACE}/android-sdk}"
+          export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT}}"
+
+          # The setup-android action can leave cmdline-tools in a versioned folder
+          # (for example cmdline-tools/16.0). Some SDK invocations expect the
+          # conventional cmdline-tools/latest layout, so create that alias when needed.
+          if [ ! -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ] && [ -x "$ANDROID_SDK_ROOT/cmdline-tools/16.0/bin/sdkmanager" ]; then
+            mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+            ln -sfn "$ANDROID_SDK_ROOT/cmdline-tools/16.0" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          fi
+
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --install \
+            "cmdline-tools;latest" \
             "platform-tools" \
             "platforms;android-36" \
             "build-tools;36.0.0" \
