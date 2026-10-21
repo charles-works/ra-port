@@ -9,6 +9,7 @@ val repoRoot = rootProject.projectDir.parentFile ?: rootProject.projectDir
 val localRedAlertAssets = repoRoot.resolve("assets/redalert")
 val generatedDebugAssets = layout.buildDirectory.dir("generated/debugAssets")
 val generatedDebugAssetsDir = layout.buildDirectory.dir("generated/debugAssets").get().asFile
+val sdlAndroidSources = repoRoot.resolve("third_party/SDL/android-project/app/src/main/java")
 
 android {
     namespace = "com.raport.redalert"
@@ -37,8 +38,8 @@ android {
         getByName("main") {
             java.setSrcDirs(
                 listOf(
-                    "src/main/java",
-                    "../third_party/SDL/android-project/app/src/main/java"
+                    file("src/main/java"),
+                    sdlAndroidSources
                 )
             )
         }
