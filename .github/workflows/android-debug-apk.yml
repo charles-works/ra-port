@@ -24,11 +24,20 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Verify SDL Android sources are present
+      - name: Ensure SDL Android sources are present
         shell: bash
         run: |
           set -euxo pipefail
-          test -f "$GITHUB_WORKSPACE/third_party/SDL/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java"
+
+          SDL_ACTIVITY="${GITHUB_WORKSPACE}/third_party/SDL/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java"
+          if [ ! -f "$SDL_ACTIVITY" ]; then
+            rm -rf "${GITHUB_WORKSPACE}/third_party/SDL"
+            mkdir -p "${GITHUB_WORKSPACE}/third_party"
+            git clone --depth 1 --branch main https://github.com/libsdl-org/SDL.git "${GITHUB_WORKSPACE}/third_party/SDL"
+          fi
+
+          test -f "$SDL_ACTIVITY"
+          ls -l "$GITHUB_WORKSPACE/third_party/SDL/android-project/app/src/main/java/org/libsdl/app"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
